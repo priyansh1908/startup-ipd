@@ -1,8 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import startupImage from '../assets/startup.jpg';
 import investorImage from '../assets/investor.jpg';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
   return (
     <main className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
       {/* Startup and Investor Sections */}
@@ -24,7 +27,7 @@ const HomePage = () => {
             </p>
             <button
               className="mt-6 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition"
-              onClick={() => alert('Startup Login Clicked')}
+              onClick={() => navigate('/startup')}
             >
               Startup Login
             </button>
@@ -46,7 +49,7 @@ const HomePage = () => {
             </p>
             <button
               className="mt-6 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition"
-              onClick={() => alert('Investor Login Clicked')}
+              onClick={() => navigate('/investor')}
             >
               Investor Login
             </button>
