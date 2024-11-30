@@ -10,23 +10,24 @@ const HomePage = () => {
     <main className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
       {/* Startup and Investor Sections */}
       <section className="py-16 px-6 bg-gradient-to-r from-blue-600 to-blue-400">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 mt-20">
           {/* Startup Section */}
           <div
-            className="p-8 bg-white rounded-lg shadow-xl hover:shadow-2xl transition dark:bg-gray-800"
+            className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-transform dark:bg-gray-800"
             data-aos="fade-up"
           >
             <img
               src={startupImage}
               alt="Startup"
-              className="w-full h-60 object-cover rounded-md mb-6"
+              loading="lazy"
+              className="w-full h-48 object-cover rounded-md mb-4"
             />
-            <h3 className="text-4xl font-semibold text-gray-800 dark:text-gray-100">Startup</h3>
+            <h3 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Startup</h3>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
               Log in to evaluate your startup and improve its chances of success.
             </p>
             <button
-              className="mt-6 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition"
+              className="mt-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition"
               onClick={() => navigate('/startup')}
             >
               Startup Login
@@ -35,20 +36,21 @@ const HomePage = () => {
 
           {/* Investor Section */}
           <div
-            className="p-8 bg-white rounded-lg shadow-xl hover:shadow-2xl transition dark:bg-gray-800"
+            className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-transform dark:bg-gray-800"
             data-aos="fade-up"
           >
             <img
               src={investorImage}
               alt="Investor"
-              className="w-full h-60 object-cover rounded-md mb-6"
+              loading="lazy"
+              className="w-full h-48 object-cover rounded-md mb-4"
             />
-            <h3 className="text-4xl font-semibold text-gray-800 dark:text-gray-100">Investor</h3>
+            <h3 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Investor</h3>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
               Log in to explore startups and find your next big investment opportunity.
             </p>
             <button
-              className="mt-6 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl hover:scale-105 transition"
+              className="mt-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition"
               onClick={() => navigate('/investor')}
             >
               Investor Login
@@ -57,10 +59,23 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* About Us Section */}
+      <section id="about" className="py-12 px-6 bg-gray-100 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
+            About Us
+          </h2>
+          <p className="mt-4 text-gray-600 dark:text-gray-400" data-aos="fade-up">
+            At StartupSuccess, we empower startups and investors by bridging the gap with data-driven insights, tools,
+            and personalized matchmaking services.
+          </p>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-12 px-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
+          <h2 className="text-4xl font-bold text-gray-100" data-aos="fade-up">
             Our Features
           </h2>
           <div
@@ -89,68 +104,80 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-12 px-6 bg-gradient-to-r from-blue-50 to-blue-100 dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
-            What Our Users Say
+      {/* Call-to-Action Section */}
+      <section className="py-12 px-6 bg-gradient-to-r from-blue-600 to-blue-400">
+        <div className="max-w-7xl mx-auto text-center text-white">
+          <h2 className="text-4xl font-bold mb-4" data-aos="fade-up">Ready to Transform Your Future?</h2>
+          <p className="mb-6 text-lg" data-aos="fade-up">
+            Take the next step towards startup success or your next big investment.
+          </p>
+          <button
+            className="py-3 px-8 bg-white text-blue-600 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition"
+            onClick={() => navigate('/signup')}
+          >
+            Get Started
+          </button>
+        </div>
+      </section>
+
+      {/* FAQs Section */}
+      <section id="faqs" className="py-12 px-6 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-gray-800 dark:text-gray-100" data-aos="fade-up">
+            Frequently Asked Questions
           </h2>
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-12" data-aos="fade-up">
-            <div className="p-8 bg-white rounded-lg shadow-xl dark:bg-gray-700">
-              <img
-                src="https://via.placeholder.com/80"
-                alt="User 1"
-                className="w-20 h-20 mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100">Jane Doe</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                "StartupSuccess helped me secure funding and improve my business plan."
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8" data-aos="fade-up">
+            <div className="p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+              <h3 className="text-xl font-semibold mb-2 text-blue-600 dark:text-blue-400">What is StartupSuccess?</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                StartupSuccess is a platform that connects startups with investors, offering tools for evaluation and
+                growth.
               </p>
             </div>
-            <div className="p-8 bg-white rounded-lg shadow-xl dark:bg-gray-700">
-              <img
-                src="https://via.placeholder.com/80"
-                alt="User 2"
-                className="w-20 h-20 mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100">John Smith</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                "I discovered promising startups that align with my investment goals."
+            <div className="p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+              <h3 className="text-xl font-semibold mb-2 text-blue-600 dark:text-blue-400">Is the platform free?</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Yes, basic features are free. We also offer premium services for advanced tools and insights.
               </p>
             </div>
-            <div className="p-8 bg-white rounded-lg shadow-xl dark:bg-gray-700">
-              <img
-                src="https://via.placeholder.com/80"
-                alt="User 3"
-                className="w-20 h-20 mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100">Emily Clark</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                "The insights and recommendations transformed our business."
+            <div className="p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+              <h3 className="text-xl font-semibold mb-2 text-blue-600 dark:text-blue-400">How do I sign up?</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Simply click on "Get Started" above to create an account and begin your journey.
+              </p>
+            </div>
+            <div className="p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+              <h3 className="text-xl font-semibold mb-2 text-blue-600 dark:text-blue-400">Can I access both roles?</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Yes, you can register as both a startup and an investor using the same account.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Animated Statistics Section */}
-      <section id="stats" className="py-12 px-6 bg-white dark:bg-gray-800">
-        <div
-          className="max-w-7xl mx-auto text-center grid grid-cols-1 md:grid-cols-3 gap-12"
-          data-aos="zoom-in"
-        >
-          <div className="p-8">
-            <h3 className="text-6xl font-bold text-blue-600 dark:text-blue-400">200+</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Startups Evaluated</p>
-          </div>
-          <div className="p-8">
-            <h3 className="text-6xl font-bold text-blue-600 dark:text-blue-400">150+</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Investors Connected</p>
-          </div>
-          <div className="p-8">
-            <h3 className="text-6xl font-bold text-blue-600 dark:text-blue-400">95%</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Success Rate</p>
-          </div>
+      {/* Newsletter Subscription Section */}
+      <section id="newsletter" className="py-12 px-6 bg-gray-100 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
+            Stay Updated
+          </h2>
+          <p className="mt-4 text-gray-600 dark:text-gray-400" data-aos="fade-up">
+            Subscribe to our newsletter for the latest updates and announcements.
+          </p>
+          <form className="mt-6 flex flex-col md:flex-row justify-center gap-4" data-aos="fade-up">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="p-3 w-full md:w-1/2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-gray-200"
+            />
+            <button
+              type="submit"
+              className="py-3 px-6 bg-blue-600 text-white rounded-lg hover:shadow-xl hover:scale-105 transition"
+            >
+              Subscribe
+            </button>
+          </form>
         </div>
       </section>
     </main>
