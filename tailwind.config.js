@@ -17,6 +17,21 @@ module.exports = {
       backgroundImage: {
         gradientBlue: 'linear-gradient(to right, #3B82F6, #1E3A8A)',
       },
+      // Add keyframes and animations here
+      keyframes: {
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        slideIn: {
+          from: { transform: 'translateY(20px)', opacity: 0 },
+          to: { transform: 'translateY(0)', opacity: 1 },
+        },
+      },
+      animation: {
+        fadeIn: 'fadeIn 1.5s ease-in-out',
+        slideIn: 'slideIn 1s ease-in-out',
+      },
     },
   },
   plugins: [require('@tailwindcss/typography')],
