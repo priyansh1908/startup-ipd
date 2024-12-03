@@ -20,7 +20,7 @@ const HomePage = () => {
               src={startupImage}
               alt="Startup"
               loading="lazy"
-              className="w-full h-48 object-cover rounded-md mb-4"
+              className="w-full h-100 object-cover rounded-md mb-4"
             />
             <h3 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Startup</h3>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
@@ -43,7 +43,7 @@ const HomePage = () => {
               src={investorImage}
               alt="Investor"
               loading="lazy"
-              className="w-full h-48 object-cover rounded-md mb-4"
+              className="w-full h-100 object-cover rounded-md mb-4"
             />
             <h3 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Investor</h3>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
