@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const InvestorPage = () => {
   const [startups] = useState([
-    { name: 'Techify', industry: 'Technology', location: 'India', roi: '120%', logo: 'https://via.placeholder.com/80?text=Techify' },
-    { name: 'GreenWorld', industry: 'Environment', location: 'India', roi: '150%', logo: 'https://via.placeholder.com/80?text=GreenWorld' },
-    { name: 'HealthWave', industry: 'Healthcare', location: 'India', roi: '90%', logo: 'https://via.placeholder.com/80?text=HealthWave' },
-    { name: 'EduSpark', industry: 'Education', location: 'India', roi: '110%', logo: 'https://via.placeholder.com/80?text=EduSpark' },
-    { name: 'AgriTech Solutions', industry: 'Agriculture', location: 'India', roi: '140%', logo: 'https://via.placeholder.com/80?text=AgriTech' },
-    { name: 'RetailBoost', industry: 'Retail', location: 'India', roi: '105%', logo: 'https://via.placeholder.com/80?text=RetailBoost' },
-    { name: 'Zomato', industry: 'FMCG', location: 'India', roi: '65%', logo: 'https://via.placeholder.com/80?text=Zomato' },
-    { name: 'Ispat Impex', industry: 'Steel', location: 'India', roi: '50%', logo: 'https://via.placeholder.com/80?text=Ispat' },
-    { name: 'Image Technology', industry: 'IT', location: 'India', roi: '80%', logo: 'https://via.placeholder.com/80?text=ImageTech' },
-    { name: 'Mehta & Sons', industry: 'Finance', location: 'India', roi: '100%', logo: 'https://via.placeholder.com/80?text=Mehta&Sons' },
+    { name: "Techify", industry: "Technology", location: "India", roi: "120%", logo: "https://via.placeholder.com/80?text=Techify" },
+    { name: "GreenWorld", industry: "Environment", location: "India", roi: "150%", logo: "https://via.placeholder.com/80?text=GreenWorld" },
+    { name: "HealthWave", industry: "Healthcare", location: "India", roi: "90%", logo: "https://via.placeholder.com/80?text=HealthWave" },
+    { name: "EduSpark", industry: "Education", location: "India", roi: "110%", logo: "https://via.placeholder.com/80?text=EduSpark" },
+    { name: "AgriTech Solutions", industry: "Agriculture", location: "India", roi: "140%", logo: "https://via.placeholder.com/80?text=AgriTech" },
+    { name: "RetailBoost", industry: "Retail", location: "India", roi: "105%", logo: "https://via.placeholder.com/80?text=RetailBoost" },
+    { name: "Zomato", industry: "FMCG", location: "India", roi: "65%", logo: "https://via.placeholder.com/80?text=Zomato" },
+    { name: "Ispat Impex", industry: "Steel", location: "India", roi: "50%", logo: "https://via.placeholder.com/80?text=Ispat" },
+    { name: "Image Technology", industry: "IT", location: "India", roi: "80%", logo: "https://via.placeholder.com/80?text=ImageTech" },
+    { name: "Mehta & Sons", industry: "Finance", location: "India", roi: "100%", logo: "https://via.placeholder.com/80?text=Mehta&Sons" },
   ]);
 
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState("");
 
   const filteredStartups = startups.filter(
     (startup) =>
       startup.name.toLowerCase().includes(filter.toLowerCase()) &&
-      startup.location.toLowerCase() === 'india'
+      startup.location.toLowerCase() === "india"
   );
 
   return (

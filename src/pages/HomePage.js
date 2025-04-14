@@ -1,13 +1,12 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Slider from 'react-slick';
-import startupImage from '../assets/startup.jpg';
-import investorImage from '../assets/investor.jpg';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import Slider from "react-slick";
+import startupImage from "../assets/startup.jpg";
+import investorImage from "../assets/investor.jpg";
 
 const HomePage = () => {
   const navigate = useNavigate();
 
-  // Slider settings
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -21,10 +20,8 @@ const HomePage = () => {
 
   return (
     <main className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-      {/* Startup and Investor Sections */}
       <section className="py-16 px-6 bg-gradient-to-r from-blue-600 to-blue-400">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 mt-20">
-          {/* Startup Section */}
           <div
             className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-transform dark:bg-gray-800"
             data-aos="fade-up"
@@ -33,7 +30,7 @@ const HomePage = () => {
               src={startupImage}
               alt="Startup"
               loading="lazy"
-              className="w-full h-100  rounded-md mb-4"
+              className="w-full h-100 object-cover rounded-md mb-4"
             />
             <h3 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">Startup</h3>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
@@ -41,13 +38,12 @@ const HomePage = () => {
             </p>
             <button
               className="mt-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition"
-              onClick={() => navigate('/startup')}
+              onClick={() => navigate("/startup")}
             >
               Startup Login
             </button>
           </div>
 
-          {/* Investor Section */}
           <div
             className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-transform dark:bg-gray-800"
             data-aos="fade-up"
@@ -64,7 +60,7 @@ const HomePage = () => {
             </p>
             <button
               className="mt-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition"
-              onClick={() => navigate('/investor')}
+              onClick={() => navigate("/investor")}
             >
               Investor Login
             </button>
@@ -72,7 +68,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* About Us Section */}
       <section id="about" className="py-12 px-6 bg-gray-100 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
@@ -85,16 +80,12 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section id="features" className="py-12 px-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-100" data-aos="fade-up">
             Our Features
           </h2>
-          <div
-            className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-12"
-            data-aos="zoom-in-up"
-          >
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-12" data-aos="zoom-in-up">
             <div className="p-8 bg-gradient-to-r from-blue-100 to-blue-50 rounded-lg shadow-xl hover:shadow-2xl dark:bg-gray-700">
               <h3 className="text-3xl font-semibold text-blue-600 dark:text-blue-400">Success Prediction</h3>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
@@ -117,7 +108,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
       <section id="testimonials" className="py-12 px-6 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl font-bold text-center text-gray-800 dark:text-gray-100" data-aos="fade-up">
@@ -125,14 +115,11 @@ const HomePage = () => {
           </h2>
           <Slider {...sliderSettings} className="mt-8">
             {[
-              { name: 'Jane Doe', feedback: 'StartupSuccess helped me secure funding and improve my business plan.' },
-              { name: 'John Smith', feedback: 'I discovered promising startups that align with my investment goals.' },
-              { name: 'Emily Clark', feedback: 'The insights and recommendations transformed our business.' },
+              { name: "Jane Doe", feedback: "StartupSuccess helped me secure funding and improve my business plan." },
+              { name: "John Smith", feedback: "I discovered promising startups that align with my investment goals." },
+              { name: "Emily Clark", feedback: "The insights and recommendations transformed our business." },
             ].map((testimonial, index) => (
-              <div
-                key={index}
-                className="p-8 bg-white rounded-lg shadow-lg dark:bg-gray-800 text-center"
-              >
+              <div key={index} className="p-8 bg-white rounded-lg shadow-lg dark:bg-gray-800 text-center">
                 <p className="text-lg text-gray-600 dark:text-gray-300">{testimonial.feedback}</p>
                 <h4 className="text-xl font-semibold mt-4 text-blue-600 dark:text-blue-400">
                   {testimonial.name}
@@ -143,7 +130,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Call-to-Action Section (Get Started Feature) */}
       <section id="get-started" className="py-16 px-6 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-center">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Future?</h2>
@@ -151,7 +137,7 @@ const HomePage = () => {
             Take the next step towards startup success or your next big investment.
           </p>
           <button
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate("/signup")}
             className="py-3 px-8 bg-white text-blue-600 rounded-lg shadow-lg hover:shadow-2xl hover:scale-105 transition font-semibold"
           >
             Get Started
@@ -159,7 +145,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Newsletter Section */}
       <section id="newsletter" className="py-12 px-6 bg-gray-100 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-800 dark:text-gray-100" data-aos="fade-up">
