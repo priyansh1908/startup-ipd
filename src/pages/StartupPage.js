@@ -8,10 +8,9 @@ import {
 
 // Dropdown Options
 const industriesOptions = [
-  { value: "3D Printing", label: "3D Printing" },
+  { value: "FinTech", label: "FinTech" }, // Match pipeline.py sample
   { value: "AI", label: "AI" },
   { value: "E-Commerce", label: "E-Commerce" },
-  { value: "FinTech", label: "FinTech" },
   { value: "Healthcare", label: "Healthcare" },
   { value: "EdTech", label: "EdTech" },
   { value: "Blockchain", label: "Blockchain" },
@@ -22,9 +21,9 @@ const industriesOptions = [
 ];
 
 const statesOptions = [
+  { value: "Delhi", label: "Delhi" }, // Match pipeline.py sample
   { value: "Maharashtra", label: "Maharashtra" },
   { value: "Karnataka", label: "Karnataka" },
-  { value: "Delhi", label: "Delhi" },
   { value: "Tamil Nadu", label: "Tamil Nadu" },
   { value: "Uttar Pradesh", label: "Uttar Pradesh" },
   { value: "Gujarat", label: "Gujarat" },
@@ -34,26 +33,26 @@ const statesOptions = [
 ];
 
 const growthConfidenceOptions = [
-  { value: "High", label: "High" },
+  { value: "Low", label: "Low" }, // Match pipeline.py sample
   { value: "Medium", label: "Medium" },
-  { value: "Low", label: "Low" },
+  { value: "High", label: "High" },
 ];
 
 const growthCategoryOptions = [
+  { value: "Medium", label: "Medium" }, // Match pipeline.py sample
   { value: "Growing", label: "Growing" },
-  { value: "Medium", label: "Medium" },
   { value: "High", label: "High" },
 ];
 
 const fundingStatusOptions = [
+  { value: "Seed", label: "Seed" }, // Match pipeline.py sample
   { value: "Growing", label: "Growing" },
   { value: "Early Stage Venture", label: "Early Stage Venture" },
-  { value: "Seed", label: "Seed" },
   { value: "M&A", label: "M&A" },
 ];
 
 const revenueOptions = [
-  { value: "Less than $1M", label: "Less than $1M" },
+  { value: "Less than $1M", label: "Less than $1M" }, // Match pipeline.py sample
   { value: "$1M to $10M", label: "$1M to $10M" },
   { value: "$10M to $50M", label: "$10M to $50M" },
   { value: "$50M to $100M", label: "$50M to $100M" },
@@ -64,7 +63,7 @@ const revenueOptions = [
 ];
 
 const investmentStageOptions = [
-  { value: "Seed", label: "Seed" },
+  { value: "Seed", label: "Seed" }, // Match pipeline.py sample
   { value: "Series A", label: "Series A" },
   { value: "Series B", label: "Series B" },
   { value: "Series C", label: "Series C" },
@@ -72,7 +71,7 @@ const investmentStageOptions = [
 ];
 
 const employeeOptions = [
-  { value: "1-10", label: "1-10" },
+  { value: "1-10", label: "1-10" }, // Match pipeline.py sample
   { value: "11-50", label: "11-50" },
   { value: "51-200", label: "51-200" },
   { value: "201-500", label: "201-500" },
@@ -83,7 +82,7 @@ const employeeOptions = [
 ];
 
 const fundingAmountOptions = [
-  { value: "$0 to $1M", label: "$0 to $1M" },
+  { value: "$0 to $1M", label: "$0 to $1M" }, // Match pipeline.py sample
   { value: "$1M to $5M", label: "$1M to $5M" },
   { value: "$5M to $10M", label: "$5M to $10M" },
   { value: "$10M to $50M", label: "$10M to $50M" },
@@ -98,8 +97,8 @@ const StartupPage = () => {
   // State
   const [formData, setFormData] = useState({
     Organization_Name: "",
-    Industries: [],
-    Headquarters_Location: [],
+    Industries: null, // Changed to null for single-select
+    Headquarters_Location: null, // Changed to null for single-select
     Estimated_Revenue: "",
     Founded_Date: "",
     Investment_Stage: "",
@@ -131,8 +130,8 @@ const StartupPage = () => {
   };
 
   // Handle select input changes
-  const handleSelectChange = (name, selectedOptions) => {
-    setFormData({ ...formData, [name]: selectedOptions });
+  const handleSelectChange = (name, selectedOption) => {
+    setFormData({ ...formData, [name]: selectedOption });
   };
 
   // Handle form submission
@@ -144,32 +143,28 @@ const StartupPage = () => {
     setComparisonReport(null);
     setSelectedStartup(null);
     const formattedData = {
-      Organization_Name: formData.Organization_Name || null,
-      Industries: formData.Industries.length > 0 ? formData.Industries.map((ind) => ind.value).join(", ") : null,
-      Headquarters_Location: formData.Headquarters_Location.length > 0 ? formData.Headquarters_Location.map((loc) => loc.value).join(", ") : null,
-      Estimated_Revenue: formData.Estimated_Revenue || null,
-      Founded_Date: formData.Founded_Date ? parseInt(formData.Founded_Date) : null,
-      Investment_Stage: formData.Investment_Stage || null,
-      Industry_Groups: formData.Industry_Groups || null,
-      Number_of_Founders: formData.Number_of_Founders ? parseInt(formData.Number_of_Founders) : null,
-      Founders: formData.Founders || null,
-      Number_of_Employees: formData.Number_of_Employees || null,
-      Number_of_Funding_Rounds: formData.Number_of_Funding_Rounds ? parseInt(formData.Number_of_Funding_Rounds) : null,
-      Funding_Status: formData.Funding_Status || null,
-      Total_Funding_Amount: formData.Total_Funding_Amount || null,
-      Growth_Category: formData.Growth_Category || null,
-      Growth_Confidence: formData.Growth_Confidence || null,
-      Monthly_visit: formData.Monthly_visit ? parseInt(formData.Monthly_visit) : null,
-      Visit_Duration_Growth: formData.Visit_Duration_Growth ? parseFloat(formData.Visit_Duration_Growth) : null,
-      Patents_Granted: formData.Patents_Granted ? parseInt(formData.Patents_Granted) : null,
-      Visit_Duration: formData.Visit_Duration ? parseInt(formData.Visit_Duration) : null,
+      Organization_Name: formData.Organization_Name || "Test Startup",
+      Industries: formData.Industries ? formData.Industries.value : "FinTech",
+      Headquarters_Location: formData.Headquarters_Location ? formData.Headquarters_Location.value : "Delhi",
+      Estimated_Revenue: formData.Estimated_Revenue || "Less than $1M",
+      Founded_Date: formData.Founded_Date ? parseFloat(formData.Founded_Date) : 2023,
+      Investment_Stage: formData.Investment_Stage || "Seed",
+      Industry_Groups: formData.Industry_Groups || "Commerce",
+      Number_of_Founders: formData.Number_of_Founders ? parseFloat(formData.Number_of_Founders) : 1,
+      Founders: formData.Founders || "Ravi Kumar",
+      Number_of_Employees: formData.Number_of_Employees || "1-10",
+      Number_of_Funding_Rounds: formData.Number_of_Funding_Rounds ? parseFloat(formData.Number_of_Funding_Rounds) : 0,
+      Funding_Status: formData.Funding_Status || "Seed",
+      Total_Funding_Amount: formData.Total_Funding_Amount || "$0 to $1M",
+      Growth_Category: formData.Growth_Category || "Medium",
+      Growth_Confidence: formData.Growth_Confidence || "Low",
+      Monthly_visit: formData.Monthly_visit ? parseFloat(formData.Monthly_visit) : 500,
+      Visit_Duration_Growth: formData.Visit_Duration_Growth ? parseFloat(formData.Visit_Duration_Growth) : 0.0,
+      Patents_Granted: formData.Patents_Granted ? parseFloat(formData.Patents_Granted) : 0,
+      Visit_Duration: formData.Visit_Duration ? parseFloat(formData.Visit_Duration) : 100,
     };
-    Object.keys(formattedData).forEach((key) => {
-      if (formattedData[key] === null || formattedData[key] === "") {
-        delete formattedData[key];
-      }
-    });
     try {
+      console.log("Sending data:", formattedData); // Debug log
       const predResponse = await axios.post("http://127.0.0.1:8000/predict", formattedData);
       setPrediction(predResponse.data);
       const peerResponse = await axios.post("http://127.0.0.1:8000/peer_comparison", formattedData);
@@ -187,34 +182,30 @@ const StartupPage = () => {
     if (selectedOption) {
       const formattedData = {
         startup_data: {
-          Organization_Name: formData.Organization_Name || null,
-          Industries: formData.Industries.length > 0 ? formData.Industries.map((ind) => ind.value).join(", ") : null,
-          Headquarters_Location: formData.Headquarters_Location.length > 0 ? formData.Headquarters_Location.map((loc) => loc.value).join(", ") : null,
-          Estimated_Revenue: formData.Estimated_Revenue || null,
-          Founded_Date: formData.Founded_Date ? parseInt(formData.Founded_Date) : null,
-          Investment_Stage: formData.Investment_Stage || null,
-          Industry_Groups: formData.Industry_Groups || null,
-          Number_of_Founders: formData.Number_of_Founders ? parseInt(formData.Number_of_Founders) : null,
-          Founders: formData.Founders || null,
-          Number_of_Employees: formData.Number_of_Employees || null,
-          Number_of_Funding_Rounds: formData.Number_of_Funding_Rounds ? parseInt(formData.Number_of_Funding_Rounds) : null,
-          Funding_Status: formData.Funding_Status || null,
-          Total_Funding_Amount: formData.Total_Funding_Amount || null,
-          Growth_Category: formData.Growth_Category || null,
-          Growth_Confidence: formData.Growth_Confidence || null,
-          Monthly_visit: formData.Monthly_visit ? parseInt(formData.Monthly_visit) : null,
-          Visit_Duration_Growth: formData.Visit_Duration_Growth ? parseFloat(formData.Visit_Duration_Growth) : null,
-          Patents_Granted: formData.Patents_Granted ? parseInt(formData.Patents_Granted) : null,
-          Visit_Duration: formData.Visit_Duration ? parseInt(formData.Visit_Duration) : null,
+          Organization_Name: formData.Organization_Name || "Test Startup",
+          Industries: formData.Industries ? formData.Industries.value : "FinTech",
+          Headquarters_Location: formData.Headquarters_Location ? formData.Headquarters_Location.value : "Delhi",
+          Estimated_Revenue: formData.Estimated_Revenue || "Less than $1M",
+          Founded_Date: formData.Founded_Date ? parseFloat(formData.Founded_Date) : 2023,
+          Investment_Stage: formData.Investment_Stage || "Seed",
+          Industry_Groups: formData.Industry_Groups || "Commerce",
+          Number_of_Founders: formData.Number_of_Founders ? parseFloat(formData.Number_of_Founders) : 1,
+          Founders: formData.Founders || "Ravi Kumar",
+          Number_of_Employees: formData.Number_of_Employees || "1-10",
+          Number_of_Funding_Rounds: formData.Number_of_Funding_Rounds ? parseFloat(formData.Number_of_Funding_Rounds) : 0,
+          Funding_Status: formData.Funding_Status || "Seed",
+          Total_Funding_Amount: formData.Total_Funding_Amount || "$0 to $1M",
+          Growth_Category: formData.Growth_Category || "Medium",
+          Growth_Confidence: formData.Growth_Confidence || "Low",
+          Monthly_visit: formData.Monthly_visit ? parseFloat(formData.Monthly_visit) : 500,
+          Visit_Duration_Growth: formData.Visit_Duration_Growth ? parseFloat(formData.Visit_Duration_Growth) : 0.0,
+          Patents_Granted: formData.Patents_Granted ? parseFloat(formData.Patents_Granted) : 0,
+          Visit_Duration: formData.Visit_Duration ? parseFloat(formData.Visit_Duration) : 100,
         },
         selected_startup_name: selectedOption.value,
       };
-      Object.keys(formattedData.startup_data).forEach((key) => {
-        if (formattedData.startup_data[key] === null || formattedData.startup_data[key] === "") {
-          delete formattedData.startup_data[key];
-        }
-      });
       try {
+        console.log("Sending comparison data:", formattedData); // Debug log
         const response = await axios.post("http://127.0.0.1:8000/compare_to_startup", formattedData);
         setComparisonReport(response.data);
       } catch (error) {
@@ -299,16 +290,15 @@ const StartupPage = () => {
             </div>
           ))}
 
-          {/* Multi-Select Fields */}
+          {/* Single-Select Fields */}
           <div>
-            <label className="block text-sm font-medium mb-2">Industries</label>
+            <label className="block text-sm font-medium mb-2">Industry</label>
             <Select
               options={industriesOptions}
-              isMulti
               value={formData.Industries}
               onChange={(selected) => handleSelectChange("Industries", selected)}
-              placeholder="Select industries..."
-              className="basic-multi-select"
+              placeholder="Select industry..."
+              className="basic-single-select"
               classNamePrefix="select"
             />
           </div>
@@ -316,11 +306,10 @@ const StartupPage = () => {
             <label className="block text-sm font-medium mb-2">Headquarters Location</label>
             <Select
               options={statesOptions}
-              isMulti
               value={formData.Headquarters_Location}
               onChange={(selected) => handleSelectChange("Headquarters_Location", selected)}
-              placeholder="Select locations..."
-              className="basic-multi-select"
+              placeholder="Select location..."
+              className="basic-single-select"
               classNamePrefix="select"
             />
           </div>
@@ -345,7 +334,7 @@ const StartupPage = () => {
               value={formData.Founded_Date}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-              placeholder="Enter year (e.g., 2020)"
+              placeholder="Enter year (e.g., 2023)"
             />
           </div>
           <div>
@@ -479,7 +468,7 @@ const StartupPage = () => {
                 <span className="font-medium">Startup:</span> {peerReport.Startup_Name}
               </p>
               <p className="text-lg">
-                <span className="font-medium">Similar Startups:</span>{" "}
+                <span className="font-medium">Similar Start-ups:</span>{" "}
                 {peerReport.Similar_Startups.join(", ") || "None identified"}
               </p>
               {peerReport.Similar_Startups.length > 0 && (

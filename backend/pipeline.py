@@ -20,7 +20,7 @@ USD_TO_INR = 83.50
 W_H = 0.7
 W_O = 0.3
 
-# Custom Transformers (unchanged)
+# Custom Transformers
 class RevenueMapper(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -340,7 +340,7 @@ class DerivedFeatures(BaseEstimator, TransformerMixin):
             raise ValueError("Feature names must be set during fit.")
         return list(self.feature_names_) + ["Funding Per Year", "Hardwork Factor", "Non-Financial Score (N)"]
 
-# Plotting Functions (replaced with data generation)
+# Plotting Functions
 def generate_bar_chart_data(z_diff, feature_display_names):
     z_diff_sorted = z_diff.sort_values()
     data = [
@@ -364,7 +364,7 @@ def generate_radar_chart_data(startup_features, industry_avg, feature_display_na
     ]
     return data
 
-# Pipeline Creation (unchanged)
+# Pipeline Creation
 def create_preprocessing_pipeline():
     numerical_features = [
         "Number of Founders", "Number of Funding Rounds", "Monthly visit",
@@ -445,7 +445,7 @@ def create_full_pipeline():
     ])
     return pipeline
 
-# Training and Prediction Functions (unchanged)
+# Training and Prediction Functions
 def train_pipeline(data_path, save_path="startup_pipeline.pkl"):
     df = pd.read_csv(data_path)
     print(f"X_train shape (initial): {df.shape}")
@@ -591,7 +591,6 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
         'Hardwork Factor': 'Hardwork Factor',
         'Non-Financial Score (N)': 'Non-Financial Score (N)'
     }
-    # Select features corresponding to user-entered fields
     input_features = [
         "revenue_mapped", "num__Number of Founders", "employees_converted",
         "num__Number of Funding Rounds", "funding_amount_converted", "growth_confidence_converted",
@@ -644,10 +643,8 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
             "Startup_Value": float(startup_val) if pd.notna(startup_val) else None,
             "Industry_Avg": float(industry_val) if pd.notna(industry_val) else None
         })
-    # Generate chart data
     bar_chart_data = generate_bar_chart_data(z_diff, feature_name_mapping)
     radar_chart_data = generate_radar_chart_data(startup_features, industry_avg, feature_name_mapping)
-    # Collect peer data
     peer_data = []
     for idx in similar_indices:
         startup = df.iloc[idx]
@@ -660,7 +657,6 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
             "name": startup["Organization Name"] if pd.notna(startup["Organization Name"]) else "Unknown",
             "metrics": peer_metrics
         })
-    # Add startup's own data
     startup_metrics = {}
     for feature in selected_features:
         readable_name = feature_name_mapping.get(feature, feature)
@@ -682,7 +678,7 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
     }
     return report
 
-# Direct Comparison (unchanged)
+# Direct Comparison
 def compare_to_selected_startup(startup_data, selected_startup_name, dataset_path):
     df = pd.read_csv(dataset_path)
     numeric_cols = ["Founded Date", "Number of Founders", "Number of Funding Rounds", "Monthly visit",
@@ -774,38 +770,40 @@ def compare_to_selected_startup(startup_data, selected_startup_name, dataset_pat
 
 # Main Execution
 if __name__ == "__main__":
-    pipeline = train_pipeline("startups.csv")
+    pipeline = train_pipeline("data_2.csv")
     sample_input = {
-        "Organization_Name": "StartupX",
-        "Industries": "Tech, AI",
-        "Headquarters_Location": "Mumbai, Maharashtra, India",
-        "Estimated_Revenue": "$1B to $10B",
-        "Founded_Date": 2020,
-        "Investment_Stage": "Seed",
-        "Industry_Groups": "Technology",
-        "Number_of_Founders": 2,
-        "Founders": "John Doe, Jane Smith",
-        "Number_of_Employees": "10-50",
-        "Number_of_Funding_Rounds": 2,
-        "Funding_Status": "Early Stage Venture",
-        "Total_Funding_Amount": "$1M to $5M",
-        "Growth_Category": "High Growth",
-        "Growth_Confidence": "High",
-        "Monthly_visit": 10000,
-        "Visit_Duration_Growth": 0.1,
-        "Patents_Granted": 2,
-        "Visit_Duration": 300
-    }
+    "Organization Name": "Test Startup",
+    "Industries": "FinTech",
+    "Headquarters Location": "Delhi",
+    "Estimated Revenue": "Less than $1M",
+    "Founded Date": 2023,
+    "Investment Stage": "Seed",
+    "Industry Groups": "Commerce",
+    "Number of Founders": 1,
+    "Founders": "Ravi Kumar",
+    "Number of Employees": "1-10",
+    "Number of Funding Rounds": 0,
+    "Funding Status": "Seed",
+    "Total Funding Amount": "$0 to $1M",
+    "Growth Category": "Medium",
+    "Growth Confidence": "Low",
+    "Monthly visit": 500,
+    "Monthly Visit Growth": -10.0,
+    "Visit Duration Growth": 0.0,
+    "Patents Granted": 0,
+    "Visit Duration": 100
+}
+
     prediction = predict_startup(sample_input)
     print("Prediction:", prediction)
-    report = generate_peer_comparison_report(sample_input, "startups.csv")
+    report = generate_peer_comparison_report(sample_input, "data_2.csv")
     print("\nPeer Comparison Report:")
     print(f"Startup: {report['Startup_Name']}")
     print(f"Similar_Startups: {', '.join(report['Similar_Startups'])}")
     print("Pros:", report["Pros"])
     print("Cons:", report["Cons"])
     if report["Similar_Startups"]:
-        comp_report = compare_to_selected_startup(sample_input, report["Similar_Startups"][0], "startups.csv")
+        comp_report = compare_to_selected_startup(sample_input, report["Similar_Startups"][0], "data_2.csv")
         print("\nComparison to Selected Startup:")
         print(f"Startup: {comp_report['Startup_Name']}")
         print(f"Selected Startup: {comp_report['Selected_Startup']}")
