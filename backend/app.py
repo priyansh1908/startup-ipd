@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import joblib
-from pipeline import predict_startup, generate_peer_comparison_report, compare_to_selected_startup
+from pipeline import predict_startup, generate_peer_comparison_report, compare_to_selected_startup, RevenueMapper, EmployeeRangeConverter, FundingConverter, YearsActiveCalculator, GrowthConfidenceConverter, IndustriesEncoder, FrequencyEncoder, DerivedFeatures
 import math
 import pymongo
 import logging
@@ -85,7 +85,37 @@ async def predict(data: StartupData):
     if not input_data:
         raise HTTPException(status_code=422, detail="No valid data provided")
     try:
-        result = predict_startup(input_data)
+        # Convert field names from underscores to spaces for the pipeline
+        converted_data = {}
+        field_mapping = {
+            "Organization_Name": "Organization Name",
+            "Industries": "Industries",
+            "Headquarters_Location": "Headquarters Location",
+            "Estimated_Revenue": "Estimated Revenue",
+            "Founded_Date": "Founded Date",
+            "Investment_Stage": "Investment Stage",
+            "Industry_Groups": "Industry Groups",
+            "Number_of_Founders": "Number of Founders",
+            "Founders": "Founders",
+            "Number_of_Employees": "Number of Employees",
+            "Number_of_Funding_Rounds": "Number of Funding Rounds",
+            "Funding_Status": "Funding Status",
+            "Total_Funding_Amount": "Total Funding Amount",
+            "Growth_Category": "Growth Category",
+            "Growth_Confidence": "Growth Confidence",
+            "Monthly_visit": "Monthly visit",
+            "Visit_Duration_Growth": "Visit Duration Growth",
+            "Patents_Granted": "Patents Granted",
+            "Visit_Duration": "Visit Duration"
+        }
+        
+        for key, value in input_data.items():
+            if key in field_mapping:
+                converted_data[field_mapping[key]] = value
+            else:
+                converted_data[key] = value
+        
+        result = predict_startup(converted_data)
         logger.info(f"Prediction for {data.Organization_Name}: {result['prediction']}")
         startup_data = input_data
         startup_data["prediction"] = result["prediction"]
@@ -118,7 +148,37 @@ async def peer_comparison(data: StartupData):
     if not input_data:
         raise HTTPException(status_code=422, detail="No valid data provided")
     try:
-        report = generate_peer_comparison_report(input_data, "data_2.csv")
+        # Convert field names from underscores to spaces for the pipeline
+        converted_data = {}
+        field_mapping = {
+            "Organization_Name": "Organization Name",
+            "Industries": "Industries",
+            "Headquarters_Location": "Headquarters Location",
+            "Estimated_Revenue": "Estimated Revenue",
+            "Founded_Date": "Founded Date",
+            "Investment_Stage": "Investment Stage",
+            "Industry_Groups": "Industry Groups",
+            "Number_of_Founders": "Number of Founders",
+            "Founders": "Founders",
+            "Number_of_Employees": "Number of Employees",
+            "Number_of_Funding_Rounds": "Number of Funding Rounds",
+            "Funding_Status": "Funding Status",
+            "Total_Funding_Amount": "Total Funding Amount",
+            "Growth_Category": "Growth Category",
+            "Growth_Confidence": "Growth Confidence",
+            "Monthly_visit": "Monthly visit",
+            "Visit_Duration_Growth": "Visit Duration Growth",
+            "Patents_Granted": "Patents Granted",
+            "Visit_Duration": "Visit Duration"
+        }
+        
+        for key, value in input_data.items():
+            if key in field_mapping:
+                converted_data[field_mapping[key]] = value
+            else:
+                converted_data[key] = value
+        
+        report = generate_peer_comparison_report(converted_data, "data_2.csv")
         clean_report = replace_inf_nan(report)
         return clean_report
     except Exception as e:
@@ -129,8 +189,38 @@ async def compare_to_startup(request: ComparisonRequest):
     input_data = request.startup_data.dict(exclude_unset=True)
     logger.info(f"Compare to startup input data: {input_data}")
     try:
+        # Convert field names from underscores to spaces for the pipeline
+        converted_data = {}
+        field_mapping = {
+            "Organization_Name": "Organization Name",
+            "Industries": "Industries",
+            "Headquarters_Location": "Headquarters Location",
+            "Estimated_Revenue": "Estimated Revenue",
+            "Founded_Date": "Founded Date",
+            "Investment_Stage": "Investment Stage",
+            "Industry_Groups": "Industry Groups",
+            "Number_of_Founders": "Number of Founders",
+            "Founders": "Founders",
+            "Number_of_Employees": "Number of Employees",
+            "Number_of_Funding_Rounds": "Number of Funding Rounds",
+            "Funding_Status": "Funding Status",
+            "Total_Funding_Amount": "Total Funding Amount",
+            "Growth_Category": "Growth Category",
+            "Growth_Confidence": "Growth Confidence",
+            "Monthly_visit": "Monthly visit",
+            "Visit_Duration_Growth": "Visit Duration Growth",
+            "Patents_Granted": "Patents Granted",
+            "Visit_Duration": "Visit Duration"
+        }
+        
+        for key, value in input_data.items():
+            if key in field_mapping:
+                converted_data[field_mapping[key]] = value
+            else:
+                converted_data[key] = value
+        
         report = compare_to_selected_startup(
-            input_data,
+            converted_data,
             request.selected_startup_name,
             "data_2.csv"
         )
