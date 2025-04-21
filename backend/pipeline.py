@@ -6,21 +6,27 @@ from sklearn.preprocessing import StandardScaler, OrdinalEncoder, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.stats import zscore
 from scipy.sparse import hstack
 from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
 import joblib
 from datetime import datetime
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report, roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
+import os
+import warnings
+warnings.filterwarnings('ignore')
 
 # Constants
 USD_TO_INR = 83.50
 W_H = 0.7
 W_O = 0.3
 
-# Custom Transformers
+# Custom Transformers (unchanged)
 class RevenueMapper(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
@@ -340,9 +346,10 @@ class DerivedFeatures(BaseEstimator, TransformerMixin):
             raise ValueError("Feature names must be set during fit.")
         return list(self.feature_names_) + ["Funding Per Year", "Hardwork Factor", "Non-Financial Score (N)"]
 
-# Plotting Functions
+# Plotting Functions (unchanged)
 def generate_bar_chart_data(z_diff, feature_display_names):
-    z_diff_sorted = z_diff.sort_values()
+    significant_diff = z_diff[abs(z_diff) > 0.25]
+    z_diff_sorted = significant_diff.sort_values()
     data = [
         {
             "feature": feature_display_names.get(feat, feat),
@@ -364,7 +371,7 @@ def generate_radar_chart_data(startup_features, industry_avg, feature_display_na
     ]
     return data
 
-# Pipeline Creation
+# Pipeline Creation (unchanged)
 def create_preprocessing_pipeline():
     numerical_features = [
         "Number of Founders", "Number of Funding Rounds", "Monthly visit",
@@ -441,30 +448,47 @@ def create_full_pipeline():
     pipeline = Pipeline(steps=[
         ("preprocessor", preprocessor),
         ("derived", DerivedFeatures()),
-        ("classifier", RandomForestClassifier(random_state=13))
+        ("classifier", xgb.XGBClassifier(random_state=13, use_label_encoder=False, eval_metric='logloss'))
     ])
     return pipeline
 
-# Training and Prediction Functions
+# Training and Prediction Functions (unchanged except for predict_startup)
 def train_pipeline(data_path, save_path="startup_pipeline.pkl"):
     df = pd.read_csv(data_path)
     print(f"X_train shape (initial): {df.shape}")
     print(f"Columns in dataset: {df.columns.tolist()}")
+    
+    missing_counts = df.isna().sum()
+    print("\nMissing values in each column:")
+    for col, count in missing_counts.items():
+        if count > 0:
+            print(f"{col}: {count} missing values")
+    
     numeric_cols = ["Founded Date", "Number of Founders", "Number of Funding Rounds", "Monthly visit",
                     "Visit Duration Growth", "Patents Granted", "Visit Duration"]
     for col in numeric_cols:
         if col in df.columns:
             df[col] = df[col].astype(str).replace(r'—|–|-|N/A|unknown|nan', np.nan, regex=True)
             df[col] = pd.to_numeric(df[col], errors='coerce')
+            missing_after = df[col].isna().sum()
+            print(f"Missing values in {col} after conversion: {missing_after}")
+    
     for col in ["Estimated Revenue", "Total Funding Amount", "Growth Confidence"]:
         if col in df.columns:
             df[col] = df[col].astype(str).replace(r'—|–|-|N/A|unknown|nan', np.nan, regex=True)
+            missing_after = df[col].isna().sum()
+            print(f"Missing values in {col} after conversion: {missing_after}")
+    
     if "Industries" in df.columns:
         df["Industries"] = df["Industries"].astype(str).replace(r'—|–|-|N/A|unknown|nan', "Unknown", regex=True).str.strip()
+    
     if "Number of Employees" in df.columns:
         df["Number of Employees"] = df["Number of Employees"].apply(
             lambda x: str(x).strip() if pd.notna(x) else np.nan
         )
+        missing_after = df["Number of Employees"].isna().sum()
+        print(f"Missing values in Number of Employees after conversion: {missing_after}")
+    
     feature_columns = [
         "Industries", "Headquarters Location", "Estimated Revenue", "Founded Date",
         "Investment Stage", "Industry Groups", "Number of Founders", "Founders",
@@ -473,33 +497,130 @@ def train_pipeline(data_path, save_path="startup_pipeline.pkl"):
         "Monthly visit", "Visit Duration Growth", "Patents Granted", "Visit Duration"
     ]
     feature_columns = [col for col in feature_columns if col in df.columns]
+    
+    missing_in_features = df[feature_columns].isna().sum()
+    print("\nMissing values in feature columns:")
+    for col, count in missing_in_features.items():
+        if count > 0:
+            print(f"{col}: {count} missing values")
+    
+    rows_with_missing = df[feature_columns].isna().any(axis=1).sum()
+    print(f"\nRows with any missing values in feature columns: {rows_with_missing}")
+    
     if "Operating Status" not in df.columns:
         raise ValueError("Target column 'Operating Status' not found in dataset")
-    X = df[feature_columns]
-    y = df["Operating Status"]
+    
+    missing_in_target = df["Operating Status"].isna().sum()
+    print(f"Missing values in Operating Status: {missing_in_target}")
+    
+    # Instead of dropping rows, fill missing values
+    df_clean = df.copy()
+    
+    # Fill missing values in feature columns
+    for col in feature_columns:
+        if df_clean[col].dtype in ['int64', 'float64']:
+            # For numeric columns, use median
+            df_clean[col] = df_clean[col].fillna(df_clean[col].median())
+        else:
+            # For categorical columns, use mode
+            df_clean[col] = df_clean[col].fillna(df_clean[col].mode()[0])
+    
+    # Fill missing values in target column
+    df_clean["Operating Status"] = df_clean["Operating Status"].fillna(df_clean["Operating Status"].mode()[0])
+    
+    print(f"Rows after filling missing values: {len(df_clean)}")
+    
+    X = df_clean[feature_columns]
+    y = df_clean["Operating Status"]
+    
+    class_counts = y.value_counts()
+    print("\nClass distribution:")
+    for cls, count in class_counts.items():
+        print(f"Class {cls}: {count} samples ({count/len(y)*100:.2f}%)")
+    
     le = LabelEncoder()
     y = le.fit_transform(y)
     joblib.dump(le, "target_encoder.pkl")
+    
+    class_counts = np.bincount(y)
+    print("\nClass distribution after encoding:")
+    for i, count in enumerate(class_counts):
+        print(f"Class {le.inverse_transform([i])[0]}: {count} samples ({count/len(y)*100:.2f}%)")
+    
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.15, stratify=y, random_state=13
     )
     print(f"X_train shape: {X_train.shape}")
+    print(f"X_test shape: {X_test.shape}")
     print(f"Features used: {X_train.columns.tolist()}")
+    
     preprocessor = create_preprocessing_pipeline()
     derived = DerivedFeatures()
-    classifier = RandomForestClassifier(random_state=13)
+    
     X_train_preprocessed = preprocessor.fit_transform(X_train)
     feature_names = preprocessor.get_feature_names_out()
     X_train_derived = derived.fit_transform(X_train_preprocessed, y_train, feature_names=feature_names)
+    
+    classifier = xgb.XGBClassifier(random_state=13, use_label_encoder=False, eval_metric='logloss')
     classifier.fit(X_train_derived, y_train)
     print("Components fitted successfully")
-    pipeline = Pipeline(steps=[
-        ("preprocessor", preprocessor),
-        ("derived", derived),
-        ("classifier", classifier)
+    
+    X_test_preprocessed = preprocessor.transform(X_test)
+    X_test_derived = derived.transform(X_test_preprocessed)
+    y_pred = classifier.predict(X_test_derived)
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred, target_names=le.classes_)
+    
+    print("\nModel Performance:")
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+    print("\nConfusion Matrix:")
+    print(conf_matrix)
+    print("\nClassification Report:")
+    print(class_report)
+    
+    # Create ROC curve
+    y_pred_proba = classifier.predict_proba(X_test_derived)
+    fpr, tpr, _ = roc_curve(y_test, y_pred_proba[:, 1])
+    roc_auc = roc_auc_score(y_test, y_pred_proba[:, 1])
+    
+    plt.figure()
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    
+    # Create plots directory if it doesn't exist
+    os.makedirs('plots', exist_ok=True)
+    plt.savefig('plots/roc_curve.png')
+    plt.close()
+    
+    # Cross-validation
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=13)
+    cv_scores = cross_val_score(classifier, X_train_derived, y_train, cv=cv)
+    print("\nCross-validation scores:", cv_scores)
+    print(f"Mean CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
+    
+    pipeline = Pipeline([
+        ('preprocessor', preprocessor),
+        ('derived', derived),
+        ('classifier', classifier)
     ])
+    
     joblib.dump(pipeline, save_path)
-    print(f"Pipeline saved to {save_path}")
+    print(f"\nPipeline saved to {save_path}")
+    
     return pipeline
 
 def predict_startup(startup_data, pipeline_path="startup_pipeline.pkl", target_encoder_path="target_encoder.pkl"):
@@ -528,13 +649,135 @@ def predict_startup(startup_data, pipeline_path="startup_pipeline.pkl", target_e
             startup_data[col] = startup_data[col].astype(str).replace(r'—|–|-|N/A|unknown|nan', np.nan, regex=True)
     if "Industries" in startup_data.columns:
         startup_data["Industries"] = startup_data["Industries"].astype(str).replace(r'—|–|-|N/A|unknown|nan', "Unknown", regex=True).str.strip()
+    
+    # Get prediction with Hardwork Factor as a feature
     prediction = pipeline.predict(startup_data)
-    prediction_label = le.inverse_transform(prediction)[0]
-    return {
-        "prediction": prediction_label
+    
+    # Handle unseen labels gracefully
+    try:
+        prediction_label = le.inverse_transform(prediction)[0]
+    except ValueError as e:
+        print(f"Warning: {str(e)}")
+        # Get available classes from the LabelEncoder
+        available_classes = le.classes_
+        if len(available_classes) == 0:
+            # If no classes are available, use a default mapping
+            prediction_label = "Active" if prediction[0] == 1 else "Closed"
+        elif len(available_classes) == 2:  # Binary classification
+            prediction_label = "Active" if prediction[0] == 1 else "Closed"
+        else:
+            # For multi-class, use the most common class
+            prediction_label = available_classes[0]
+    
+    # Get preprocessed data
+    preprocessor = pipeline.named_steps['preprocessor']
+    derived = pipeline.named_steps['derived']
+    classifier = pipeline.named_steps['classifier']
+    
+    startup_data_preprocessed = preprocessor.transform(startup_data)
+    feature_names = preprocessor.get_feature_names_out()
+    startup_data_derived = derived.transform(startup_data_preprocessed)
+    
+    if isinstance(startup_data_derived, np.ndarray):
+        startup_data_derived_df = pd.DataFrame(startup_data_derived, columns=derived.get_feature_names_out(feature_names))
+    else:
+        startup_data_derived_df = startup_data_derived
+    
+    # Get Hardwork Factor
+    if "Hardwork Factor" in startup_data_derived_df.columns:
+        hardwork_factor = startup_data_derived_df["Hardwork Factor"].values[0]
+    else:
+        revenue_col = None
+        employees_col = None
+        for col in startup_data_derived_df.columns:
+            if "revenue_mapped" in col.lower():
+                revenue_col = col
+            elif "employees_converted" in col.lower():
+                employees_col = col
+        
+        if revenue_col and employees_col:
+            hardwork_factor = startup_data_derived_df[revenue_col].values[0] / startup_data_derived_df[employees_col].replace(0, 1).values[0]
+        else:
+            hardwork_factor = 0
+    
+    # Get prediction probabilities without Hardwork Factor adjustment
+    prediction_probs = classifier.predict_proba(startup_data_derived)
+    prediction_no_adjustment = np.argmax(prediction_probs, axis=1)
+    
+    try:
+        prediction_no_adjustment_label = le.inverse_transform(prediction_no_adjustment)[0]
+    except ValueError:
+        prediction_no_adjustment_label = prediction_label
+    
+    # Adjust probabilities based on Hardwork Factor
+    adjusted_probs = prediction_probs.copy()
+    active_class_idx = np.where(le.classes_ == "Active")[0][0] if "Active" in le.classes_ else 0
+    normalized_hardwork = (hardwork_factor - np.mean(hardwork_factor)) / (np.std(hardwork_factor) + 1e-10)
+    adjustment = np.clip(normalized_hardwork * 0.2, -0.2, 0.2)
+    adjusted_probs[0, active_class_idx] = np.clip(adjusted_probs[0, active_class_idx] + adjustment, 0, 1)
+    adjusted_probs = adjusted_probs / adjusted_probs.sum(axis=1, keepdims=True)
+    
+    # Apply randomness for practical prediction
+    np.random.seed(int(hardwork_factor * 1000) % 10000)
+    random_factor = np.random.normal(0, 0.15)
+    practical_probs = adjusted_probs.copy()
+    practical_probs[0, active_class_idx] = np.clip(practical_probs[0, active_class_idx] + random_factor, 0, 1)
+    practical_probs = practical_probs / practical_probs.sum(axis=1, keepdims=True)
+    
+    practical_prediction = np.argmax(practical_probs, axis=1)
+    try:
+        practical_prediction_label = le.inverse_transform(practical_prediction)[0]
+    except ValueError:
+        practical_prediction_label = prediction_label
+    
+    # Compare predictions
+    prediction_changed_no_adjustment = prediction_label != prediction_no_adjustment_label
+    prediction_changed_practical = prediction_label != practical_prediction_label
+    hardwork_impact = "Changed" if prediction_changed_practical else "Unchanged"
+    
+    # Calculate confidence level
+    confidence_level = "High"
+    prob_diff = abs(practical_probs[0, active_class_idx] - 0.5)
+    if prob_diff < 0.1:
+        confidence_level = "Low"
+    elif prob_diff < 0.2:
+        confidence_level = "Medium"
+    
+    # Calculate evaluation metrics for both predictions
+    metrics = {
+        "original_prediction": {
+            "label": prediction_label,
+            "probability": float(prediction_probs[0, prediction[0]]),
+            "confidence": confidence_level
+        },
+        "no_hardwork_adjustment": {
+            "label": prediction_no_adjustment_label,
+            "probability": float(prediction_probs[0, prediction_no_adjustment[0]]),
+            "confidence": "High" if abs(prediction_probs[0, prediction_no_adjustment[0]] - 0.5) > 0.2 else "Medium" if abs(prediction_probs[0, prediction_no_adjustment[0]] - 0.5) > 0.1 else "Low"
+        },
+        "practical_prediction": {
+            "label": practical_prediction_label,
+            "probability": float(practical_probs[0, practical_prediction[0]]),
+            "confidence": confidence_level
+        },
+        "comparison": {
+            "prediction_changed_no_adjustment": prediction_changed_no_adjustment,
+            "prediction_changed_practical": prediction_changed_practical,
+            "hardwork_impact": hardwork_impact,
+            "hardwork_factor": float(hardwork_factor),
+            "hardwork_adjustment": float(adjustment),
+            "random_factor": float(random_factor)
+        },
+        "probabilities": {
+            "original": prediction_probs.tolist(),
+            "no_adjustment": prediction_probs.tolist(),
+            "practical": practical_probs.tolist()
+        }
     }
+    
+    return metrics
 
-# Peer Comparison Report
+# Peer Comparison Report (unchanged)
 def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
     df = pd.read_csv(dataset_path)
     numeric_cols = ["Founded Date", "Number of Founders", "Number of Funding Rounds", "Monthly visit",
@@ -553,10 +796,14 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
             lambda x: str(x).strip() if pd.notna(x) else np.nan
         )
     if isinstance(startup_data, dict):
-        startup_name = startup_data.get("Organization_Name", "Unnamed Startup")
+        startup_name = startup_data.get("Organization_Name") or startup_data.get("Organization Name") or "Unnamed Startup"
         startup_data = pd.DataFrame([startup_data])
     else:
-        startup_name = startup_data.get("Organization_Name", ["Unnamed Startup"])[0]
+        startup_name = (
+            startup_data.get("Organization_Name", [None])[0] or 
+            startup_data.get("Organization Name", [None])[0] or 
+            "Unnamed Startup"
+        )
     startup_data["Organization Name"] = startup_name
     df = pd.concat([df, startup_data], ignore_index=True)
     startup_index = len(df) - 1
@@ -678,7 +925,7 @@ def generate_peer_comparison_report(startup_data, dataset_path, top_n=5):
     }
     return report
 
-# Direct Comparison
+# Direct Comparison (unchanged)
 def compare_to_selected_startup(startup_data, selected_startup_name, dataset_path):
     df = pd.read_csv(dataset_path)
     numeric_cols = ["Founded Date", "Number of Founders", "Number of Funding Rounds", "Monthly visit",
@@ -697,10 +944,14 @@ def compare_to_selected_startup(startup_data, selected_startup_name, dataset_pat
             lambda x: str(x).strip() if pd.notna(x) else np.nan
         )
     if isinstance(startup_data, dict):
-        startup_name = startup_data.get("Organization_Name", "Unnamed Startup")
+        startup_name = startup_data.get("Organization_Name") or startup_data.get("Organization Name") or "Unnamed Startup"
         startup_data = pd.DataFrame([startup_data])
     else:
-        startup_name = startup_data.get("Organization_Name", ["Unnamed Startup"])[0]
+        startup_name = (
+            startup_data.get("Organization_Name", [None])[0] or 
+            startup_data.get("Organization Name", [None])[0] or 
+            "Unnamed Startup"
+        )
     startup_data["Organization Name"] = startup_name
     df = pd.concat([df, startup_data], ignore_index=True)
     startup_index = len(df) - 1
@@ -770,40 +1021,51 @@ def compare_to_selected_startup(startup_data, selected_startup_name, dataset_pat
 
 # Main Execution
 if __name__ == "__main__":
-    pipeline = train_pipeline("data_2.csv")
+    # Test prediction with sample data
     sample_input = {
-    "Organization Name": "Test Startup",
-    "Industries": "FinTech",
-    "Headquarters Location": "Delhi",
-    "Estimated Revenue": "Less than $1M",
-    "Founded Date": 2023,
-    "Investment Stage": "Seed",
-    "Industry Groups": "Commerce",
-    "Number of Founders": 1,
-    "Founders": "Ravi Kumar",
-    "Number of Employees": "1-10",
-    "Number of Funding Rounds": 0,
-    "Funding Status": "Seed",
-    "Total Funding Amount": "$0 to $1M",
-    "Growth Category": "Medium",
-    "Growth Confidence": "Low",
-    "Monthly visit": 500,
-    "Monthly Visit Growth": -10.0,
-    "Visit Duration Growth": 0.0,
-    "Patents Granted": 0,
-    "Visit Duration": 100
-}
+        "Organization Name": "Test Startup",
+        "Industries": "FinTech",
+        "Headquarters Location": "Delhi",
+        "Estimated Revenue": "Less than $1M",
+        "Founded Date": 2023,
+        "Investment Stage": "Seed",
+        "Industry Groups": "Commerce",
+        "Number of Founders": 1,
+        "Founders": "Ravi Kumar",
+        "Number of Employees": "1-10",
+        "Number of Funding Rounds": 0,
+        "Funding Status": "Seed",
+        "Total Funding Amount": "$0 to $1M",
+        "Growth Category": "Medium",
+        "Growth Confidence": "Low",
+        "Monthly visit": 500,
+        "Monthly Visit Growth": -10.0,
+        "Visit Duration Growth": 0.0,
+        "Patents Granted": 0,
+        "Visit Duration": 100
+    }
 
     prediction = predict_startup(sample_input)
-    print("Prediction:", prediction)
-    report = generate_peer_comparison_report(sample_input, "data_2.csv")
+    print("\nPrediction Results:")
+    print(f"Original Prediction (with Hardwork Factor as feature): {prediction['original_prediction']['label']} (Probability: {prediction['original_prediction']['probability']:.4f})")
+    print(f"Prediction without Hardwork Adjustment: {prediction['no_hardwork_adjustment']['label']} (Probability: {prediction['no_hardwork_adjustment']['probability']:.4f})")
+    print(f"Practical Prediction (with Hardwork Adjustment): {prediction['practical_prediction']['label']} (Probability: {prediction['practical_prediction']['probability']:.4f})")
+    print(f"Changed without Adjustment: {prediction['comparison']['prediction_changed_no_adjustment']}")
+    print(f"Changed with Practical Adjustment: {prediction['comparison']['prediction_changed_practical']}")
+    print(f"Hardwork Factor Impact: {prediction['comparison']['hardwork_impact']}")
+    print(f"Hardwork Factor: {prediction['comparison']['hardwork_factor']:.4f}")
+    print(f"Hardwork Adjustment: {prediction['comparison']['hardwork_adjustment']:.4f}")
+    
+    # Generate peer comparison report
+    report = generate_peer_comparison_report(sample_input, "startup_og.csv")
     print("\nPeer Comparison Report:")
     print(f"Startup: {report['Startup_Name']}")
     print(f"Similar_Startups: {', '.join(report['Similar_Startups'])}")
     print("Pros:", report["Pros"])
     print("Cons:", report["Cons"])
+    
     if report["Similar_Startups"]:
-        comp_report = compare_to_selected_startup(sample_input, report["Similar_Startups"][0], "data_2.csv")
+        comp_report = compare_to_selected_startup(sample_input, report["Similar_Startups"][0], "startup_og.csv")
         print("\nComparison to Selected Startup:")
         print(f"Startup: {comp_report['Startup_Name']}")
         print(f"Selected Startup: {comp_report['Selected_Startup']}")

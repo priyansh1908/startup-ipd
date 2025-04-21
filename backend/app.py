@@ -116,17 +116,19 @@ async def predict(data: StartupData):
                 converted_data[key] = value
         
         result = predict_startup(converted_data)
-        logger.info(f"Prediction for {data.Organization_Name}: {result['prediction']}")
+        logger.info(f"Prediction for {data.Organization_Name}: {result['practical_prediction']['label']} (Confidence: {result['practical_prediction']['confidence']})")
         startup_data = input_data
-        startup_data["prediction"] = result["prediction"]
-        if result["prediction"] == "Active":
+        startup_data["prediction"] = result["practical_prediction"]["label"]
+        startup_data["confidence_level"] = result["practical_prediction"]["confidence"]
+        
+        if result["practical_prediction"]["label"] == "Active":
             active_startups_collection.update_one(
                 {"Organization_Name": startup_data.get("Organization_Name")},
                 {"$set": startup_data},
                 upsert=True
             )
             logger.info(f"Stored Active startup: {startup_data.get('Organization_Name')}")
-        elif result["prediction"] == "Closed":
+        elif result["practical_prediction"]["label"] == "Closed":
             # Optional: Store Closed startups in a separate collection
             closed_startups_collection.update_one(
                 {"Organization_Name": startup_data.get("Organization_Name")},
@@ -135,7 +137,7 @@ async def predict(data: StartupData):
             )
             logger.info(f"Stored Closed startup: {startup_data.get('Organization_Name')}")
         else:
-            logger.warning(f"Unexpected prediction value: {result['prediction']}")
+            logger.warning(f"Unexpected prediction value: {result['practical_prediction']['label']}")
         return result
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")
@@ -178,7 +180,7 @@ async def peer_comparison(data: StartupData):
             else:
                 converted_data[key] = value
         
-        report = generate_peer_comparison_report(converted_data, "data_2.csv")
+        report = generate_peer_comparison_report(converted_data, "startup_og.csv")
         clean_report = replace_inf_nan(report)
         return clean_report
     except Exception as e:
@@ -222,7 +224,7 @@ async def compare_to_startup(request: ComparisonRequest):
         report = compare_to_selected_startup(
             converted_data,
             request.selected_startup_name,
-            "data_2.csv"
+            "startup_og.csv"
         )
         clean_report = replace_inf_nan(report)
         return clean_report
@@ -238,6 +240,7 @@ async def get_startups():
                 "Organization_Name": s.get("Organization_Name", "Unknown"),
                 "Industries": s.get("Industries", "N/A"),
                 "Headquarters_Location": s.get("Headquarters_Location", "N/A"),
+                "Investment_Stage": s.get("Investment_Stage", "N/A"),
                 "prediction": s.get("prediction", "N/A")
             }
             for s in startups
