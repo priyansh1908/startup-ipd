@@ -116,9 +116,9 @@ async def predict(data: StartupData):
                 converted_data[key] = value
         
         result = predict_startup(converted_data)
-        logger.info(f"Prediction for {data.Organization_Name}: {result['practical_prediction']['label']} (Confidence: {result['practical_prediction']['confidence']})")
+        logger.info(f"Prediction for {data.Organization_Name}: {result['practical_prediction']['display_label']} (Confidence: {result['practical_prediction']['confidence']})")
         startup_data = input_data
-        startup_data["prediction"] = result["practical_prediction"]["label"]
+        startup_data["prediction"] = result["practical_prediction"]["display_label"]
         startup_data["confidence_level"] = result["practical_prediction"]["confidence"]
         
         if result["practical_prediction"]["label"] == "Active":
@@ -127,15 +127,14 @@ async def predict(data: StartupData):
                 {"$set": startup_data},
                 upsert=True
             )
-            logger.info(f"Stored Active startup: {startup_data.get('Organization_Name')}")
+            logger.info(f"Stored Successful startup: {startup_data.get('Organization_Name')}")
         elif result["practical_prediction"]["label"] == "Closed":
-            # Optional: Store Closed startups in a separate collection
             closed_startups_collection.update_one(
                 {"Organization_Name": startup_data.get("Organization_Name")},
                 {"$set": startup_data},
                 upsert=True
             )
-            logger.info(f"Stored Closed startup: {startup_data.get('Organization_Name')}")
+            logger.info(f"Stored Struggling startup: {startup_data.get('Organization_Name')}")
         else:
             logger.warning(f"Unexpected prediction value: {result['practical_prediction']['label']}")
         return result

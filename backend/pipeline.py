@@ -747,16 +747,19 @@ def predict_startup(startup_data, pipeline_path="startup_pipeline.pkl", target_e
     metrics = {
         "original_prediction": {
             "label": prediction_label,
+            "display_label": "Successful" if prediction_label == "Active" else "Struggling",
             "probability": float(prediction_probs[0, prediction[0]]),
             "confidence": confidence_level
         },
         "no_hardwork_adjustment": {
             "label": prediction_no_adjustment_label,
+            "display_label": "Successful" if prediction_no_adjustment_label == "Active" else "Struggling",
             "probability": float(prediction_probs[0, prediction_no_adjustment[0]]),
             "confidence": "High" if abs(prediction_probs[0, prediction_no_adjustment[0]] - 0.5) > 0.2 else "Medium" if abs(prediction_probs[0, prediction_no_adjustment[0]] - 0.5) > 0.1 else "Low"
         },
         "practical_prediction": {
             "label": practical_prediction_label,
+            "display_label": "Successful" if practical_prediction_label == "Active" else "Struggling",
             "probability": float(practical_probs[0, practical_prediction[0]]),
             "confidence": confidence_level
         },
