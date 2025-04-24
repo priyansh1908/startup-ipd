@@ -1,6 +1,6 @@
 # Startup Success
 
-![Startup Success Logo](https://via.placeholder.com/150) <!-- Replace with your actual logo URL -->
+![Startup Success Logo](src/assets/logo.png) <!-- Replace with your actual logo URL -->
 
 Welcome to **Startup Success**, an innovative platform designed to predict the success of startups and provide actionable insights through peer comparisons. Built with a modern tech stack, this application empowers entrepreneurs and investors with data-driven predictions and detailed analyses to make informed decisions.
 
